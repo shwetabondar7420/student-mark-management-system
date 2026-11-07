@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Student Marks Management System</title>
+
+<style>
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    background: #f1f5f9;
+    color: #1e293b;
+}
+
+header {
+    background: #1e40af;
+    color: white;
+    text-align: center;
+    padding: 25px;
+}
+
+header p {
+    margin-top: 8px;
+}
+
+.container {
+    max-width: 1000px;
+    margin: 30px auto;
+    padding: 20px;
+}
+
+.stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 15px;
+    margin-bottom: 25px;
+}
+
+.card {
+    background: white;
+    padding: 22px;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px #00000012;
+}
+
+.card h3 {
+    color: #64748b;
+    font-size: 15px;
+}
+
+.card h2 {
+    color: #1d4ed8;
+    margin-top: 10px;
+}
+
+.form-box {
+    background: white;
+    padding: 25px;
+    border-radius: 10px;
+    margin-bottom: 25px;
+}
+
+input {
+    width: 100%;
+    padding: 12px;
+    margin: 8px 0;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+}
+
+button {
+    padding: 11px 18px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    color: white;
+    background: #2563eb;
+    margin-top: 8px;
+}
+
+button:hover {
+    opacity: 0.85;
+}
+
+.delete {
+    background: #dc2626;
+}
+
+.export {
+    background: #15803d;
+}
+
+.search {
+    margin: 15px 0;
+}
+
+.table-box {
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    overflow-x: auto;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 650px;
+}
+
+th, td {
+    padding: 13px;
+    border-bottom: 1px solid #e2e8f0;
+    text-align: center;
+}
+
+th {
+    background: #dbeafe;
+    color: #1e40af;
+}
+
+footer {
+    text-align: center;
+    padding: 20px;
+    color: #64748b;
+}
+
+@media(max-width: 600px) {
+    .stats {
+        grid-template-columns: 1fr;
+    }
+    .container {
+        padding: 12px;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<header>
+    <h1>Student Marks Management System</h1>
+    <p>Manage student marks, grades and performance</p>
+</header>
+
+<div class="container">
+
+    <div class="stats">
+        <div class="card">
+            <h3>Total Students</h3>
+            <h2 id="totalStudents">0</h2>
+        </div>
+
+        <div class="card">
+            <h3>Class Average</h3>
+            <h2 id="average">0%</h2>
+        </div>
+
+        <div class="card">
+            <h3>Highest Percentage</h3>
+            <h2 id="highest">0%</h2>
+        </div>
+    </div>
+
+    <div class="form-box">
+        <h2>Add Student Details</h2>
+
+        <input type="text" id="name" placeholder="Enter student name">
+
+        <input type="number" id="roll" placeholder="Enter roll number">
+
+        <input type="number" id="science" placeholder="Science marks (0-100)" min="0" max="100">
+
+        <input type="number" id="maths" placeholder="Maths marks (0-100)" min="0" max="100">
+
+        <input type="number" id="english" placeholder="English marks (0-100)" min="0" max="100">
+
+        <button onclick="addStudent()">Add Student</button>
+    </div>
+
+    <div class="table-box">
+        <h2>Student Records</h2>
+
+        <input class="search" type="text"
+        id="search" placeholder="Search by student name or roll number"
+        oninput="displayStudents()">
+
+        <button class="export" onclick="exportCSV()">Download CSV</button>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Roll No</th>
+                    <th>Name</th>
+                    <th>Science</th>
+                    <th>Maths</th>
+                    <th>English</th>
+                    <th>Total</th>
+                    <th>Percentage</th>
+                    <th>Grade</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+
+            <tbody id="studentTable"></tbody>
+        </table>
+    </div>
+
+</div>
+
+<footer>
+    <p>Student Marks Management System | HTML CSS JavaScript</p>
+</footer>
+
+<script>
+
+let students = [
+    {roll: 1, name: "Shweta", science: 85, maths: 90, english: 88},
+    {roll: 2, name: "Prachi", science: 75, maths: 80, english: 85},
+    {roll: 3, name: "Rahul", science: 65, maths: 70, english: 72}
+];
+
+function getResult(student) {
+    let total = student.science + student.maths + student.english;
+    let percentage = total / 3;
+
+    let grade;
+
+    if (student.science < 35 ||
+        student.maths < 35 ||
+        student.english < 35) {
+        grade = "Fail";
+    } else if (percentage >= 90) {
+        grade = "A+";
+    } else if (percentage >= 80) {
+        grade = "A";
+    } else if (percentage >= 70) {
+        grade = "B";
+    } else if (percentage >= 60) {
+        grade = "C";
+    } else if (percentage >= 35) {
+        grade = "D";
+    } else {
+        grade = "Fail";
+    }
+
+    return {
+        total: total,
+        percentage: percentage.toFixed(2),
+        grade: grade
+    };
+}
+
+function addStudent() {
+    let name = document.getElementById("name").value.trim();
+    let roll = Number(document.getElementById("roll").value);
+    let science = Number(document.getElementById("science").value);
+    let maths = Number(document.getElementById("maths").value);
+    let english = Number(document.getElementById("english").value);
+
+    if (!name || !roll ||
+        document.getElementById("science").value === "" ||
+        document.getElementById("maths").value === "" ||
+        document.getElementById("english").value === "") {
+        alert("Please fill all fields!");
+        return;
+    }
+
+    if (students.some(s => s.roll === roll)) {
+        alert("Roll number already exists!");
+        return;
+    }
+
+    if ([science, maths, english].some(m => m < 0 || m > 100)) {
+        alert("Marks must be between 0 and 100!");
+        return;
+    }
+
+    students.push({roll, name, science, maths, english});
+
+    document.querySelectorAll(".form-box input").forEach(input => {
+        input.value = "";
+    });
+
+    displayStudents();
+}
+
+function deleteStudent(roll) {
+    if (confirm("Are you sure you want to delete this student?")) {
+        students = students.filter(s => s.roll !== roll);
+        displayStudents();
+    }
+}
+
+function displayStudents() {
+    let table = document.getElementById("studentTable");
+    let search = document.getElementById("search").value.toLowerCase();
+
+    table.innerHTML = "";
+
+    let filtered = students.filter(s =>
+        s.name.toLowerCase().includes(search) ||
+        String(s.roll).includes(search)
+    );
+
+    filtered.forEach(s => {
+        let result = getResult(s);
+
+        table.innerHTML += `
+        <tr>
+            <td>${s.roll}</td>
+            <td>${s.name}</td>
+            <td>${s.science}</td>
+            <td>${s.maths}</td>
+            <td>${s.english}</td>
+            <td>${result.total}</td>
+            <td>${result.percentage}%</td>
+            <td>${result.grade}</td>
+            <td>
+                <button class="delete"
+                onclick="deleteStudent(${s.roll})">Delete</button>
+            </td>
+        </tr>`;
+    });
+
+    let count = students.length;
+
+    let avg = count
+        ? students.reduce((sum, s) =>
+            sum + Number(getResult(s).percentage), 0) / count
+        : 0;
+
+    let highest = count
+        ? Math.max(...students.map(s =>
+            Number(getResult(s).percentage)))
+        : 0;
+
+    document.getElementById("totalStudents").textContent = count;
+    document.getElementById("average").textContent = avg.toFixed(2) + "%";
+    document.getElementById("highest").textContent = highest.toFixed(2) + "%";
+}
+
+function exportCSV() {
+    if (students.length === 0) {
+        alert("No student records to download!");
+        return;
+    }
+
+    let csv = "Roll No,Name,Science,Maths,English,Total,Percentage,Grade\n";
+
+    students.forEach(s => {
+        let r = getResult(s);
+        csv += `${s.roll},${s.name},${s.science},${s.maths},${s.english},${r.total},${r.percentage},${r.grade}\n`;
+    });
+
+    let blob = new Blob([csv], {type: "text/csv"});
+    let url = URL.createObjectURL(blob);
+
+    let link = document.createElement("a");
+    link.href = url;
+    link.download = "student_marks.csv";
+    link.click();
+
+    URL.revokeObjectURL(url);
+}
+
+displayStudents();
+
+</script>
+
+</body>
+</html>
